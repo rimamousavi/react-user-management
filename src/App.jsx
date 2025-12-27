@@ -1,28 +1,49 @@
 import { useState } from "react";
 import { DialogForm, UserTable } from "./components";
-
 import useSWR from "swr";
 import axios from "axios";
 import { useToggle } from "@uidotdev/usehooks";
+import useSWRMutation from "swr/mutation";
+
+axios.defaults.baseURL = "https://693e775f12c964ee6b6d71d4.mockapi.io/api/v1";
+const API_URL = "/users";
+
+const addUserFetcher = async (url, { arg }) => {
+  try {
+    await axios.post(url, arg);
+  } catch (error) {
+    console.error("Error adding user:", error);
+  }
+};
+
+const updateUserFetcher = async (url, { arg }) => {
+  const { id, ...data } = arg;
+  try {
+    await axios.put(`${url}/${id}`, data);
+  } catch (error) {
+    console.error("Error updating user:", error);
+  }
+};
+
+const deleteUserFetcher = async (url, { arg: id }) => {
+  try {
+    await axios.delete(`${url}/${id}`);
+  } catch (error) {
+    console.error("Error deleting user:", error);
+  }
+};
 
 function debounce(func, delay) {
   let timeoutId;
-
   return function (...args) {
     clearTimeout(timeoutId);
-
     timeoutId = setTimeout(() => {
       func.apply(this, args);
     }, delay);
   };
 }
-axios.defaults.baseURL = "https://693e775f12c964ee6b6d71d4.mockapi.io/api/v1";
-function App() {
-  const API_URL = "/users";
 
-  function handleOnChange(e) {
-    setFilter((prve) => ({ ...prve, search: e.target.value }));
-  }
+function App() {
   const [on, toggle] = useToggle(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [filter, setFilter] = useState({ role: "", status: "", search: "" });
@@ -30,11 +51,18 @@ function App() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
 
-  const { data: users, isLoading } = useSWR(
+  const {
+    data: users,
+    isLoading,
+    mutate,
+  } = useSWR(
     [API_URL, filter, sort, page, limit],
     ([url, filter, sort, page, limit]) => {
       const allParams = { ...filter, ...sort, page, limit };
-
+      if (limit === "all" || limit === null) {
+        delete allParams.page;
+        delete allParams.limit;
+      }
       const cleanedParams = Object.fromEntries(
         // eslint-disable-next-line no-unused-vars
         Object.entries(allParams).filter(([_, v]) => v !== "")
@@ -45,33 +73,93 @@ function App() {
       });
     }
   );
+
   const { data: allUsers } = useSWR(
     [API_URL, filter, sort],
     ([url, filter, sort]) => {
       const allParams = { ...filter, ...sort };
-
       const cleanedParams = Object.fromEntries(
         // eslint-disable-next-line no-unused-vars
         Object.entries(allParams).filter(([_, v]) => v !== "")
       );
-
       return axios.get(url, {
         params: cleanedParams,
       });
     }
+  );
+
+  const { trigger: addUserTrigger } = useSWRMutation(API_URL, addUserFetcher);
+  const { trigger: deleteUserTrigger } = useSWRMutation(
+    API_URL,
+    deleteUserFetcher
+  );
+  const { trigger: updateUserTrigger } = useSWRMutation(
+    API_URL,
+    updateUserFetcher
   );
 
   const totalUser = allUsers?.data?.length || 0;
   const totalPage = Math.ceil(totalUser / limit);
   const start = (page - 1) * limit + 1 || 1;
   const end = Math.min(start + limit - 1, totalUser) || totalUser;
+
+  function handleSearch(e) {
+    setFilter((prev) => ({ ...prev, search: e.target.value }));
+    setPage(1);
+  }
+  function handleRole(e) {
+    setFilter((prev) => ({ ...prev, role: e.target.value }));
+    setPage(1);
+  }
+  function handleStatus(e) {
+    setFilter((prev) => ({ ...prev, status: e.target.value }));
+    setPage(1);
+  }
   function handleSort(e) {
     const value = e.target.value;
     const [sortBy, order] = value.split("_");
     setSort({ sortBy, order });
+    setPage(1);
   }
 
+  function handleUserAdd(formData) {
+    addUserTrigger(formData, {
+      onSuccess: () => {
+        toggle(false);
+        mutate();
+      },
+    });
+  }
+
+  function handleUserUpdate(dataWithId) {
+    updateUserTrigger(dataWithId, {
+      onSuccess: () => {
+        toggle(false);
+        setSelectedUser(null);
+        mutate();
+      },
+    });
+  }
+
+  function handleUserDelete(id) {
+    deleteUserTrigger(id, {
+      onSuccess: () => {
+        mutate();
+      },
+    });
+  }
+
+  const handleFormSubmit = (formData) => {
+    if (selectedUser) {
+      handleUserUpdate({ id: selectedUser.id, ...formData });
+    } else {
+      handleUserAdd(formData);
+    }
+  };
+
   if (isLoading) return <div>loading...</div>;
+
+  console.log("selectedUser", selectedUser);
 
   return (
     <>
@@ -101,7 +189,7 @@ function App() {
                 </svg>
                 <input
                   // value={filter.search}
-                  onChange={debounce(handleOnChange, 800)}
+                  onChange={debounce(handleSearch, 800)}
                   type="search"
                   name="search"
                   id="search"
@@ -169,9 +257,7 @@ function App() {
                 <div id="roles-filter">
                   <select
                     value={filter.role}
-                    onChange={(e) =>
-                      setFilter((prev) => ({ ...prev, role: e.target.value }))
-                    }
+                    onChange={handleRole}
                     id="roles"
                     className="custom-select"
                   >
@@ -183,9 +269,7 @@ function App() {
                 <div id="status-filter">
                   <select
                     value={filter.status}
-                    onChange={(e) =>
-                      setFilter((prve) => ({ ...prve, status: e.target.value }))
-                    }
+                    onChange={handleStatus}
                     id="status"
                     className="custom-select"
                   >
@@ -233,10 +317,11 @@ function App() {
             <table>
               <UserTable
                 users={users?.data}
-                onRowEdit={(id) => {
-                  setSelectedUser(id);
+                onRowEdit={(user) => {
+                  setSelectedUser(user);
                   toggle(true);
                 }}
+                onRowDelete={handleUserDelete}
               />
               <tfoot className="border-t">
                 <tr>
@@ -305,10 +390,16 @@ function App() {
         </div>
       </main>
       <DialogForm
+        key={selectedUser ? selectedUser : "add-mode"}
         isOpen={on}
-        onClose={() => toggle(false)}
-        title={selectedUser ? " Update" : "add user"}
-        button={selectedUser ? "Update User" : "add user"}
+        initialData={selectedUser}
+        onSubmit={handleFormSubmit}
+        onClose={() => {
+          toggle(false);
+          setSelectedUser(null);
+        }}
+        title={selectedUser ? "Update User" : "Add User"}
+        button={selectedUser ? "Update User" : "Add User"}
       />
     </>
   );
