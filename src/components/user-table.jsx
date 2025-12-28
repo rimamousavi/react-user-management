@@ -1,13 +1,15 @@
 import { TableRow } from "./user-table-row";
 
-export function UserTable({ users, onRowEdit }) {
+export function UserTable({ users, onRowEdit, onRowDelete }) {
   if (!users || users.length === 0) {
     return (
-      <tr>
-        <td colspan="9" className="text-center p-4">
-          No users found.
-        </td>
-      </tr>
+      <tbody>
+        <tr>
+          <td colpan="9" className="text-center p-4">
+            No users found.
+          </td>
+        </tr>
+      </tbody>
     );
   }
 
@@ -46,6 +48,8 @@ export function UserTable({ users, onRowEdit }) {
               status={status}
               createdAt={createdAt}
               onEdit={onRowEdit}
+              onDelete={onRowDelete}
+              users={users?.data}
             />
           );
         })}

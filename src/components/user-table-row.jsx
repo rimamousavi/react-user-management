@@ -1,5 +1,6 @@
 export function TableRow(props) {
-  const { id, status, name, email, role, phone, createdAt, onEdit } = props;
+  const { id, status, name, email, role, phone, createdAt, onEdit, onDelete } =
+    props;
   const isActive = status === true;
   const initials = name
     .split(" ")
@@ -12,10 +13,9 @@ export function TableRow(props) {
       <td data-label="Select" className="td">
         <label className="check-container">
           <input
-            data-user-id="{id}"
             className="row-checkbox"
             type="checkbox"
-            //    {this.selectedUserIds.has(id) ? "checked" : ""}
+            // checked={setSelectedUser.has(id)}
           />
           <span className="checkbox"></span>
         </label>
@@ -82,7 +82,10 @@ export function TableRow(props) {
               <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
             </svg>
           </button>
-          <button className="delete-btn inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([className*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-[--ring] focus-visible:ring-[#a1a1a1]/50 focus-visible:ring-[3px] hover:bg-[--accent] hover:text-[--accent-foreground] dark:hover:bg-[--accent]/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5">
+          <button
+            onClick={() => onDelete?.(id)}
+            className="delete-btn inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([className*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-[--ring] focus-visible:ring-[#a1a1a1]/50 focus-visible:ring-[3px] hover:bg-[--accent] hover:text-[--accent-foreground] dark:hover:bg-[--accent]/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
