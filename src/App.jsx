@@ -50,7 +50,6 @@ function App() {
   const [sort, setSort] = useState({ sortBy: "", order: "" });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
-
   const {
     data: users,
     isLoading,
@@ -73,7 +72,6 @@ function App() {
       });
     }
   );
-
   const { data: allUsers } = useSWR(
     [API_URL, filter, sort],
     ([url, filter, sort]) => {
@@ -87,7 +85,6 @@ function App() {
       });
     }
   );
-
   const { trigger: addUserTrigger } = useSWRMutation(API_URL, addUserFetcher);
   const { trigger: deleteUserTrigger } = useSWRMutation(
     API_URL,
@@ -102,7 +99,13 @@ function App() {
   const totalPage = Math.ceil(totalUser / limit);
   const start = (page - 1) * limit + 1 || 1;
   const end = Math.min(start + limit - 1, totalUser) || totalUser;
-
+  const handleFormSubmit = (formData) => {
+    if (selectedUser) {
+      handleUserUpdate({ id: selectedUser.id, ...formData });
+    } else {
+      handleUserAdd(formData);
+    }
+  };
   function handleSearch(e) {
     setFilter((prev) => ({ ...prev, search: e.target.value }));
     setPage(1);
@@ -121,7 +124,6 @@ function App() {
     setSort({ sortBy, order });
     setPage(1);
   }
-
   function handleUserAdd(formData) {
     addUserTrigger(formData, {
       onSuccess: () => {
@@ -130,7 +132,6 @@ function App() {
       },
     });
   }
-
   function handleUserUpdate(dataWithId) {
     updateUserTrigger(dataWithId, {
       onSuccess: () => {
@@ -140,7 +141,6 @@ function App() {
       },
     });
   }
-
   function handleUserDelete(id) {
     deleteUserTrigger(id, {
       onSuccess: () => {
@@ -149,13 +149,7 @@ function App() {
     });
   }
 
-  const handleFormSubmit = (formData) => {
-    if (selectedUser) {
-      handleUserUpdate({ id: selectedUser.id, ...formData });
-    } else {
-      handleUserAdd(formData);
-    }
-  };
+
 
   if (isLoading) return <div>loading...</div>;
 
