@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { DialogForm, UserTable } from "./components";
 import useSWR from "swr";
 import axios from "axios";
@@ -96,7 +96,59 @@ function App() {
   );
 
   const totalUser = allUsers?.data?.length || 0;
-  const totalPage = Math.ceil(totalUser / limit);
+  const [selectedIds, setSelectedIds] = useState({});
+  const selectAllRef = useRef(null);
+
+  useEffect(() => {
+    const selectedCount = Object.keys(selectedIds).length;
+    if (!selectAllRef.current) return;
+    selectAllRef.current.indeterminate =
+      selectedCount > 0 && selectedCount < totalUser;
+    selectAllRef.current.checked = selectedCount === totalUser && totalUser > 0;
+  }, [selectedIds, totalUser]);
+
+  function handleUserSelect(id, checked) {
+    setSelectedIds((prev) => {
+      const next = { ...prev };
+      if (checked) next[id] = true;
+      else delete next[id];
+      return next;
+    });
+  }
+
+  function handleSelectAll(checked) {
+    if (checked) {
+      const all = {};
+      (allUsers?.data || []).forEach((u) => {
+        all[u.id] = true;
+      });
+      setSelectedIds(all);
+    } else {
+      setSelectedIds({});
+    }
+  }
+
+  function handleExport() {
+    const ids = Object.keys(selectedIds);
+    if (ids.length === 0) return alert("No users selected to export");
+    const usersToExport = (allUsers?.data || []).filter((u) => ids.includes(u.id));
+    const headers = ["id", "name", "email", "phone", "role", "status", "createdAt"];
+    const csv = [headers.join(",")].concat(
+      usersToExport.map((u) =>
+        headers.map((h) => JSON.stringify(u[h] ?? "")).join(",")
+      )
+    ).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "selected-users.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+  const totalPage = limit ? Math.ceil(totalUser / limit) : 1;
   const start = (page - 1) * limit + 1 || 1;
   const end = Math.min(start + limit - 1, totalUser) || totalUser;
   const handleFormSubmit = (formData) => {
@@ -221,6 +273,7 @@ function App() {
 
                 <button
                   id="extract-btn"
+                  onClick={handleExport}
                   className="flex w-44 sm:w-auto font-medium transition-all items-center justify-center gap-2 whitespace-nowrap shrink-0 h-9 px-4 py-2 has-[>svg]:px-3 rounded-md bg-black text-white hover:bg-black/90 disabled:pointer-events-none disabled:opacity-50 outline-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([className*='size-'])]:size-4 sm:flex"
                 >
                   Export Users
@@ -309,8 +362,35 @@ function App() {
           </div>
           <div className="flex flex-col-reverse overflow-x-auto border border-gray-200 bg-white rounded-lg mt-4">
             <table>
+              <thead className="bg-white border-b border-gray-200 mt-4">
+        <tr>
+          <th className="th">
+            <label className="check-container">
+              <input
+                id="select-all-checkbox"
+                ref={selectAllRef}
+                type="checkbox"
+                onChange={(e) => handleSelectAll(e.target.checked)}
+              />
+              <span className="checkbox"></span>
+            </label>
+          </th>
+          <th className="th">Profile</th>
+          <th className="th">Full Name</th>
+          <th className="th">Email Address</th>
+          <th className="th">Phone Number</th>
+          <th className="th">Role</th>
+          <th className="th">status</th>
+          <th className="th">Last Login</th>
+          <th className="text-foreground h-10 px-2 align-middle font-medium whitespace-nowrap text-right">
+            Actions
+          </th>
+        </tr>
+      </thead>
               <UserTable
                 users={users?.data}
+                selectedIds={selectedIds}
+                onUserSelect={handleUserSelect}
                 onRowEdit={(user) => {
                   setSelectedUser(user);
                   toggle(true);
@@ -363,7 +443,18 @@ function App() {
                             id="page-buttons-container"
                             className="flex items-center space-x-2 px-2"
                           >
-                            {page}
+                            {Array.from({ length: totalPage }, (_, i) => i + 1).map(
+                              (p) => (
+                                <button
+                                  key={p}
+                                  data-page={p}
+                                  onClick={() => setPage(p)}
+                                  className={`pagination-button page-number-btn ${p === page ? "bg-gray-200" : ""}`}
+                                >
+                                  {p}
+                                </button>
+                              )
+                            )}
                           </div>
                           <button
                             disabled={page === totalPage}

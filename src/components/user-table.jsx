@@ -1,11 +1,13 @@
 import { TableRow } from "./user-table-row";
 
-export function UserTable({ users, onRowEdit, onRowDelete }) {
+export function UserTable({ users, onRowEdit, onRowDelete, selectedIds, onUserSelect }) {
+
+     
   if (!users || users.length === 0) {
     return (
       <tbody>
         <tr>
-          <td colpan="9" className="text-center p-4">
+          <td colSpan="9" className="text-center p-4">
             No users found.
           </td>
         </tr>
@@ -15,26 +17,7 @@ export function UserTable({ users, onRowEdit, onRowDelete }) {
 
   return (
     <>
-      <thead className="bg-white border-b border-gray-200 mt-4">
-        <tr>
-          <th className="th">
-            <label className="check-container">
-              <input id="select-all-checkbox" type="checkbox" />
-              <span className="checkbox"></span>
-            </label>
-          </th>
-          <th className="th">Profile</th>
-          <th className="th">Full Name</th>
-          <th className="th">Email Address</th>
-          <th className="th">Phone Number</th>
-          <th className="th">Role</th>
-          <th className="th">status</th>
-          <th className="th">Last Login</th>
-          <th className="text-foreground h-10 px-2 align-middle font-medium whitespace-nowrap text-right">
-            Actions
-          </th>
-        </tr>
-      </thead>
+      
       <tbody>
         {users?.map(({ id, status, name, email, role, phone, createdAt }) => {
           return (
@@ -49,7 +32,8 @@ export function UserTable({ users, onRowEdit, onRowDelete }) {
               createdAt={createdAt}
               onEdit={onRowEdit}
               onDelete={onRowDelete}
-              users={users?.data}
+              selectedUsers={selectedIds}
+              onUserSelect={onUserSelect}
             />
           );
         })}

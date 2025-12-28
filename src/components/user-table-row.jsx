@@ -1,5 +1,6 @@
+
 export function TableRow(props) {
-  const { id, status, name, email, role, phone, createdAt, onEdit, onDelete } =
+  const { id, status, name, email, role, phone, createdAt, onEdit, onDelete , selectedUsers ,onUserSelect  } =
     props;
   const isActive = status === true;
   const initials = name
@@ -15,7 +16,8 @@ export function TableRow(props) {
           <input
             className="row-checkbox"
             type="checkbox"
-            // checked={setSelectedUser.has(id)}
+            checked={!!selectedUsers?.[id]}
+            onChange={(e) => onUserSelect?.(id, e.target.checked)}
           />
           <span className="checkbox"></span>
         </label>
