@@ -6,6 +6,10 @@ export function SelectOption({
   defaultOptionLabel,
   className = "",
 }) {
+  if (!options || options.length == 0) {
+    return <p className="text-red-500">options requred</p>;
+  }
+
   return (
     <select
       value={value}
@@ -15,7 +19,7 @@ export function SelectOption({
     >
       {defaultOptionLabel && <option value="">{defaultOptionLabel}</option>}
 
-      {options.map((opt) => (
+      {options?.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
         </option>
