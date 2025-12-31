@@ -4,6 +4,7 @@ import { useToggle } from "@uidotdev/usehooks";
 import { useDebounceValue } from "usehooks-ts";
 import Loader from "./components/loader";
 import { useUserContext } from "./context/user-context";
+import { RefreshCcw } from "lucide-react";
 
 function App() {
   const service = useUserContext();
@@ -31,7 +32,8 @@ function App() {
       create(formData, () => {
         toggle(false);
         setPage(totalPage);
-        refresh;
+        console.log(total, ":total");
+        refresh();
       });
     }
   };
@@ -43,6 +45,11 @@ function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
+  useEffect(() => {
+    if (!isLoading && pagination.page > 1 && users?.length === 0) {
+      setPage(pagination.page - 1);
+    }
+  }, [users, pagination.page, isLoading, setPage]);
 
   useEffect(() => {
     const selectedCount = Object.keys(selectedIds).length;
