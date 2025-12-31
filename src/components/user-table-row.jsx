@@ -1,7 +1,17 @@
-
 export function TableRow(props) {
-  const { id, status, name, email, role, phone, createdAt, onEdit, onDelete , selectedUsers ,onUserSelect  } =
-    props;
+  const {
+    id,
+    status,
+    name,
+    email,
+    role,
+    phone,
+    createdAt,
+    onEdit,
+    onDelete,
+    selectedUsers,
+    onUserSelect,
+  } = props;
   const isActive = status === true;
   const initials = name
     .split(" ")
