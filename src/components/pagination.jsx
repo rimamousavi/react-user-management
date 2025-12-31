@@ -1,3 +1,5 @@
+import { SelectOption } from "./select-option";
+
 export function Pagination({
   total = 0,
   page = 1,
@@ -8,7 +10,14 @@ export function Pagination({
   const totalPage = limit ? Math.ceil(total / limit) : 1;
   const start = (page - 1) * limit + 1 || 1;
   const end = Math.min(start + limit - 1, total) || total;
-
+  const PERPAGE_OPTIONS = [
+    { value: "5", label: "5 Items per page" },
+    { value: "10", label: "10 Items per page" },
+    { value: "15", label: "15 Items per page" },
+    { value: "50", label: "50 Items per page" },
+    { value: "100", label: "100 Items per page" },
+    { value: "all", label: "All items" },
+  ];
   const handleLimitChange = (e) => {
     const val = e.target.value;
     const newLimit = val === "all" ? null : Number(val);
@@ -26,20 +35,13 @@ export function Pagination({
       </div>
       <div className="flex flex-row space-x-2 gap-4 flex-wrap-reverse">
         <div id="per-page">
-          <select
+          <SelectOption
             value={limit || "all"}
             onChange={handleLimitChange}
             name="pagination.limit"
-            id="per"
-            className="custom-select w-auto"
-          >
-            <option value="5">5 Items per page</option>
-            <option value="10">10 Items per page</option>
-            <option value="15">15 Items per page</option>
-            <option value="50">50 Items per page</option>
-            <option value="100">100 Items per page</option>
-            <option value="all">All items</option>
-          </select>
+            className="w-auto"
+            options={PERPAGE_OPTIONS}
+          />
         </div>
         <div className="flex flex-row justify-between ">
           <button

@@ -1,25 +1,41 @@
 import { useState, useRef, useEffect } from "react";
 import { DialogForm, UserTable, ExportUsers, Header } from "./components";
 import { useToggle } from "@uidotdev/usehooks";
-import { useUserService } from "./hooks/api";
 import { useDebounceValue } from "usehooks-ts";
 import Loader from "./components/loader";
+import { useUserContext } from "./context/user-context";
 
 function App() {
+  const service = useUserContext();
+  const selectAllRef = useRef(null);
   const [on, toggle] = useToggle(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedIds, setSelectedIds] = useState({});
-  const selectAllRef = useRef(null);
-  const userService = useUserService();
-  const { users, allUsers, isLoading, total } = userService.data;
-  const { filter, pagination } = userService.state;
+  const { users, allUsers, isLoading, total } = service.data;
+  const { filter, pagination } = service.state;
   const { setFilter, setPage, create, update, remove, refresh } =
-    userService.actions;
+    service.actions;
   const [searchTerm, setSearchTerm] = useState(filter.search || "");
   const [debouncedSearch] = useDebounceValue(searchTerm, 800);
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
+  const totalPage = pagination.limit ? Math.ceil(total / pagination.limit) : 1;
+  const handleFormSubmit = (formData) => {
+    if (selectedUser) {
+      update({ id: selectedUser.id, ...formData }, () => {
+        toggle(false);
+        setSelectedUser(null);
+      });
+    } else {
+      create(formData, () => {
+        toggle(false);
+        setPage(totalPage);
+        refresh;
+      });
+    }
+  };
+
   useEffect(() => {
     if (debouncedSearch !== filter.search) {
       setFilter((prev) => ({ ...prev, search: debouncedSearch }));
@@ -45,22 +61,7 @@ function App() {
     });
   }
 
-  const totalPage = pagination.limit ? Math.ceil(total / pagination.limit) : 1;
-  const handleFormSubmit = (formData) => {
-    if (selectedUser) {
-      update({ id: selectedUser.id, ...formData }, () => {
-        toggle(false);
-        setSelectedUser(null);
-        setPage(totalPage);
-      });
-    } else {
-      create(formData, () => {
-        toggle(false);
-        setPage(totalPage);
-        refresh;
-      });
-    }
-  };
+  console.log(filter, "in");
 
   return (
     <>

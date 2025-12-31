@@ -1,11 +1,13 @@
 import { ArrowUpNarrowWideIcon, FunnelIcon } from "lucide-react";
-import { useUserService } from "../hooks/api";
 import { SelectOption } from "./select-option";
+import { useUserContext } from "../context/user-context";
 
 export function Header() {
-  const userService = useUserService();
-  const { filter, sort } = userService.state;
-  const { setFilter, setSort, setPage } = userService.actions;
+  const service = useUserContext();
+
+  const { filter, sort } = service.state;
+  const { setFilter, setSort, setPage } = service.actions;
+
   const ROLE_OPTIONS = [
     { label: "Admin", value: "admin" },
     { label: "User", value: "user" },
@@ -22,17 +24,20 @@ export function Header() {
     { label: "Name (A-Z)", value: "name_asc" },
     { label: "Name (Z-A)", value: "name_desc" },
   ];
+
   function handleFilterChange(e) {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
     setPage(1);
   }
+
   function handleSort(e) {
     const value = e.target.value;
     const [sortBy, order] = value.split("_");
     setSort({ sortBy, order });
     setPage(1);
   }
+
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-gray-200 bg-white p-4 rounded-lg">
       <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">

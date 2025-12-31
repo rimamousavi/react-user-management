@@ -1,6 +1,6 @@
 import { TableRow } from "./user-table-row";
 import { Pagination } from "./pagination";
-import { useUserService } from "../hooks/api";
+import { useUserContext } from "../context/user-context";
 
 export function UserTable({
   users,
@@ -13,6 +13,8 @@ export function UserTable({
   setSelectedIds,
   total,
 }) {
+  const service = useUserContext();
+
   if (!users || users.length === 0) {
     return (
       <tbody>
@@ -24,10 +26,9 @@ export function UserTable({
       </tbody>
     );
   }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const userService = useUserService();
-  const { pagination } = userService.state;
-  const { setPage, setLimit } = userService.actions;
+
+  const { pagination } = service.state;
+  const { setPage, setLimit } = service.actions;
   function handleSelectAll(checked) {
     if (checked) {
       const all = {};
