@@ -10,10 +10,10 @@ export function DialogForm({
 }) {
   console.log(initialData, "selectedUser");
   const [formState, setFormState] = useState({
-    fullName: initialData?.name,
-    email: initialData?.email,
-    phone: initialData?.phone,
-    role: initialData?.role,
+    fullName: initialData?.name || "",
+    email: initialData?.email || "",
+    phone: initialData?.phone || "",
+    role: initialData?.role || "",
     status: initialData?.status !== undefined ? String(initialData.status) : "",
   });
   const handleChange = (e) => {
