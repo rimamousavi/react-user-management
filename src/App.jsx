@@ -4,7 +4,6 @@ import { useToggle } from "@uidotdev/usehooks";
 import { useDebounceValue } from "usehooks-ts";
 import Loader from "./components/loader";
 import { useUserContext } from "./context/user-context";
-import { RefreshCcw } from "lucide-react";
 
 function App() {
   const service = useUserContext();
