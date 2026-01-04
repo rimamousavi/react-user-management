@@ -32,7 +32,6 @@ function App() {
       create(formData, () => {
         toggle(false);
         setPage(totalPage);
-        console.log(total, ":total");
         refresh();
       });
     }
@@ -67,8 +66,6 @@ function App() {
       return next;
     });
   }
-
-  console.log(filter, "in");
 
   return (
     <>
