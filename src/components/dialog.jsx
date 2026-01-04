@@ -8,7 +8,6 @@ export function DialogForm({
   onSubmit,
   initialData,
 }) {
-  console.log(initialData, "selectedUser");
   const [formState, setFormState] = useState({
     fullName: initialData?.name || "",
     email: initialData?.email || "",

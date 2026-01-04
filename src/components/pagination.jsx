@@ -24,8 +24,6 @@ export function Pagination({
     onLimitChange(newLimit);
   };
 
-  console.log(total, page, limit, "Pagination");
-
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
       <div className="flex items-center space-x-2">
