@@ -1,3 +1,5 @@
+import { useUserContext } from "../context/user-context";
+
 export function TableRow(props) {
   const {
     id,
@@ -12,6 +14,10 @@ export function TableRow(props) {
     selectedUsers,
     onUserSelect,
   } = props;
+
+  const service = useUserContext();
+  const { update } = service.actions;
+
   const isActive = status === true;
   const initials = name
     .split(" ")
@@ -19,6 +25,10 @@ export function TableRow(props) {
     .join("")
     .toUpperCase();
 
+  const handleStatusChange = (e) => {
+    const newStatus = e.target.checked;
+    update({ id, status: newStatus });
+  };
   return (
     <tr key={id} className="hover:bg-gray-50 [&_tr:last-child]:border-0">
       <td data-label="Select" className="td">
@@ -57,11 +67,11 @@ export function TableRow(props) {
         <div className="flex items-center space-x-2">
           <label className="switch">
             <input
-              data-id="{id}"
               data-name="{name}"
               className="switch-btn"
               type="checkbox"
-              defaultChecked={isActive}
+              checked={isActive}
+              onChange={handleStatusChange}
             />
             <span className="slider round"></span>
           </label>

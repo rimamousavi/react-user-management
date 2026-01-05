@@ -1,0 +1,11 @@
+services:
+  react-user-management:
+    image: react-user-management:${TAG}
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    ports:
+      - 9595:3000

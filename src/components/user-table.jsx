@@ -84,6 +84,7 @@ export function UserTable({
               onDelete={onRowDelete}
               selectedUsers={selectedIds}
               onUserSelect={onUserSelect}
+              
             />
           );
         })}

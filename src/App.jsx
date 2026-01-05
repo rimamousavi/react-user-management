@@ -20,21 +20,6 @@ function App() {
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-  const totalPage = pagination.limit ? Math.ceil(total / pagination.limit) : 1;
-  const handleFormSubmit = (formData) => {
-    if (selectedUser) {
-      update({ id: selectedUser.id, ...formData }, () => {
-        toggle(false);
-        setSelectedUser(null);
-      });
-    } else {
-      create(formData, () => {
-        toggle(false);
-        setPage(totalPage);
-        refresh();
-      });
-    }
-  };
 
   useEffect(() => {
     if (debouncedSearch !== filter.search) {
@@ -156,18 +141,21 @@ function App() {
           </div>
         </div>
       </main>
-      <DialogForm
-        key={selectedUser ? selectedUser : "add-mode"}
-        isOpen={on}
-        initialData={selectedUser}
-        onSubmit={handleFormSubmit}
-        onClose={() => {
-          toggle(false);
-          setSelectedUser(null);
-        }}
-        title={selectedUser ? "Update User" : "Add User"}
-        button={selectedUser ? "Update User" : "Add User"}
-      />
+      {on && (
+        <DialogForm
+          // key={selectedUser ? selectedUser : "add-mode"}
+          isOpen={on}
+          initialData={selectedUser}
+          actions={{ create, update, refresh, setPage }}
+          pagination={{ total, limit: pagination.limit }}
+          onClose={() => {
+            toggle(false);
+            setSelectedUser(null);
+          }}
+          title={selectedUser ? "Update User" : "Add User"}
+          button={selectedUser ? "Update User" : "Add User"}
+        />
+      )}
     </>
   );
 }

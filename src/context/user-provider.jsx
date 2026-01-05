@@ -83,12 +83,22 @@ export function UserProvider({ children }) {
       console.log("Failed to update user", e);
     }
   };
+  // const remove = async (id, onSuccess) => {
+  //   try {
+  //     await deleteMutation.trigger(id);
+  //     confirm("are you sure to delete this user?");
+  //     if (onSuccess) onSuccess();
+  //   } catch (e) {
+  //     console.log("Failed to delete user", e);
+  //   }
+  // };
   const remove = async (id, onSuccess) => {
     try {
-      await deleteMutation.trigger(id);
-      mutate();
-      alert("are you sure to delete this user?");
-      if (onSuccess) onSuccess();
+      if (confirm("are you sure to delete this user?")) {
+        await deleteMutation.trigger(id);
+        mutate();
+        onSuccess();
+      }
     } catch (e) {
       console.log("Failed to delete user", e);
     }

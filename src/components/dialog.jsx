@@ -5,8 +5,9 @@ export function DialogForm({
   onClose,
   closeable = false,
   button,
-  onSubmit,
   initialData,
+  actions, // { create, update, refresh, setPage }
+  pagination, // { total, limit }
 }) {
   const [formState, setFormState] = useState({
     fullName: initialData?.name || "",
@@ -25,16 +26,32 @@ export function DialogForm({
   };
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const submittedData = {
       ...formState,
       name: formState.fullName,
       status: formState.status === "true",
     };
-    onSubmit(submittedData);
+
+    if (initialData?.id) {
+      actions.update({ id: initialData.id, ...submittedData }, () => {
+        onClose();
+      });
+    } else {
+      actions.create(submittedData, () => {
+        onClose();
+
+        if (pagination && actions.setPage && actions.refresh) {
+          const { total, limit } = pagination;
+          const newTotalPage = limit ? Math.ceil((total + 1) / limit) : 1;
+          actions.setPage(newTotalPage);
+          actions.refresh();
+        }
+      });
+    }
   };
-  if (!isOpen) {
-    return null;
-  }
+
+  if (!isOpen) return null;
 
   return (
     <div
