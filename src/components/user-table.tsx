@@ -1,6 +1,20 @@
 import { TableRow } from "./user-table-row";
 import { Pagination } from "./pagination";
 import { useUserContext } from "../context/user-context";
+import { User } from "../type";
+import { RefObject } from "react";
+
+interface UserTableProps {
+  users: User[];
+  onRowEdit: (user: User) => void;
+  onRowDelete: (id: string) => void;
+  selectedIds: Record<string, boolean>;
+  onUserSelect: (id: string, checked: boolean) => void;
+  selectAllRef: RefObject<HTMLInputElement | null>;
+  allUsers: User[];
+  setSelectedIds: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  total: number;
+}
 
 export function UserTable({
   users,
@@ -12,14 +26,14 @@ export function UserTable({
   allUsers,
   setSelectedIds,
   total,
-}) {
+}: UserTableProps) {
   const service = useUserContext();
 
   if (!users || users.length === 0) {
     return (
       <tbody>
         <tr>
-          <td colSpan="9" className="text-center p-4">
+          <td colSpan={9} className="text-center p-4">
             No users found.
           </td>
         </tr>
@@ -30,9 +44,9 @@ export function UserTable({
   const { pagination } = service.state;
   const { setPage, setLimit } = service.actions;
 
-  function handleSelectAll(checked) {
+  function handleSelectAll(checked: boolean) {
     if (checked) {
-      const all = {};
+      const all: Record<string, boolean> = {};
 
       (allUsers || []).forEach((u) => {
         all[u.id] = true;
@@ -71,17 +85,11 @@ export function UserTable({
         </tr>
       </thead>
       <tbody>
-        {users?.map(({ id, status, name, email, role, phone, createdAt }) => {
+        {users?.map((user) => {
           return (
             <TableRow
-              id={id}
-              key={id}
-              name={name}
-              role={role}
-              email={email}
-              phone={phone}
-              status={status}
-              createdAt={createdAt}
+              user={user}
+              key={user.id}
               onEdit={onRowEdit}
               onDelete={onRowDelete}
               selectedUsers={selectedIds}
@@ -92,13 +100,15 @@ export function UserTable({
       </tbody>
       <tfoot className="border-t">
         <tr>
-          <td colSpan="9" className="sm:p-4 h-full w-full">
+          <td colSpan={9} className="sm:p-4 h-full w-full">
             <Pagination
               total={total}
               page={pagination.page}
               limit={pagination.limit}
-              onPageChange={(e) => setPage(e)}
-              onLimitChange={(e) => {
+              onPageChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPage(e)
+              }
+              onLimitChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setLimit(e);
                 setPage(1);
               }}

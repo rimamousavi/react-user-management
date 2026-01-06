@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
-
-export const UserContext = createContext();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const UserContext = createContext<any>(null);
 
 export const useUserContext = () => {
   const context = useContext(UserContext);

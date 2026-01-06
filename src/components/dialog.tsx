@@ -6,8 +6,8 @@ export function DialogForm({
   closeable = false,
   button,
   initialData,
-  actions, // { create, update, refresh, setPage }
-  pagination, // { total, limit }
+  actions,
+  pagination,
 }) {
   const [formState, setFormState] = useState({
     fullName: initialData?.name || "",
@@ -16,7 +16,7 @@ export function DialogForm({
     role: initialData?.role || "",
     status: initialData?.status !== undefined ? String(initialData.status) : "",
   });
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     const { name, value } = e.target;
     setFormState((prev) => ({
@@ -24,7 +24,7 @@ export function DialogForm({
       [name]: value,
     }));
   };
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     const submittedData = {

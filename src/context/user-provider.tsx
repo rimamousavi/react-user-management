@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { UserContext } from "./user-context";
 
 import useSWR from "swr";
@@ -8,36 +8,75 @@ import useSWRMutation from "swr/mutation";
 axios.defaults.baseURL = "http://localhost:3000";
 const API_URL = "/users";
 
-// --- Fetchers
+interface User {
+  id: string | number;
+  [key: string]: unknown;
+}
+
+interface FilterState {
+  role: string;
+  status: string;
+  search: string;
+}
+
+interface SortState {
+  sortBy: string;
+  order: string;
+}
+
+interface PaginationState {
+  page: number;
+  limit: number;
+}
+
+interface UserProviderProps {
+  children: ReactNode;
+}
+
+// --- Fetchers ---
 const api = {
-  add: async (url, { arg }) => axios.post(url, arg),
-  update: async (url, { arg }) => {
+  add: async (url: string, { arg }: { arg: Omit<User, "id"> }) =>
+    axios.post(url, arg),
+
+  update: async (url: string, { arg }: { arg: User }) => {
     const { id, ...data } = arg;
     return axios.patch(`${url}/${id}`, data);
   },
-  delete: async (url, { arg: id }) => axios.delete(`${url}/${id}`),
+
+  delete: async (url: string, { arg: id }: { arg: string | number }) =>
+    axios.delete(`${url}/${id}`),
 };
 
-export function UserProvider({ children }) {
+export function UserProvider({ children }: UserProviderProps) {
   // --- States
-  const [filter, setFilter] = useState({ role: "", status: "", search: "" });
-  const [sort, setSort] = useState({ sortBy: "", order: "" });
-  const [pagination, setPagination] = useState({ page: 1, limit: 5 });
+  const [filter, setFilter] = useState<FilterState>({
+    role: "",
+    status: "",
+    search: "",
+  });
+  const [sort, setSort] = useState<SortState>({ sortBy: "", order: "" });
+  const [pagination, setPagination] = useState<PaginationState>({
+    page: 1,
+    limit: 5,
+  });
 
-  function cleanParams(obj) {
-    const clean = {};
+  // Helper to remove empty keys from params
+  function cleanParams(obj: Record<string, unknown>) {
+    const clean: Record<string, unknown> = {};
     Object.keys(obj).forEach((key) => {
+      const value = obj[key];
       if (
-        obj[key] !== "" &&
-        obj[key] !== "all" &&
-        obj[key] !== null &&
-        obj[key] !== undefined
+        value !== "" &&
+        value !== "all" &&
+        value !== null &&
+        value !== undefined
       ) {
-        clean[key] = obj[key];
+        clean[key] = value;
       }
     });
     return clean;
   }
+
   // --- Data Fetching with pagination
   const {
     data: users,
@@ -56,7 +95,7 @@ export function UserProvider({ children }) {
     }
   );
 
-  // --- Data Fetching without pagination
+  // --- Data Fetching without pagination (for 'allUsers' list)
   const { data: allUsers } = useSWR(
     [API_URL, filter, sort],
     ([url, filter, sort]) => {
@@ -68,13 +107,14 @@ export function UserProvider({ children }) {
       return axios.get(url, { params: apiParams });
     }
   );
+
   // --- Mutations
   const addMutation = useSWRMutation(API_URL, api.add);
   const updateMutation = useSWRMutation(API_URL, api.update);
   const deleteMutation = useSWRMutation(API_URL, api.delete);
 
-  // --- Helper
-  const create = async (formData, onSuccess) => {
+  // --- Helper Functions
+  const create = async (formData: Omit<User, "id">, onSuccess?: () => void) => {
     try {
       await addMutation.trigger(formData);
       mutate();
@@ -83,7 +123,8 @@ export function UserProvider({ children }) {
       console.error("Failed to create user", e);
     }
   };
-  const update = async (dataWithId, onSuccess) => {
+
+  const update = async (dataWithId: User, onSuccess?: () => void) => {
     try {
       await updateMutation.trigger(dataWithId);
       mutate();
@@ -92,28 +133,20 @@ export function UserProvider({ children }) {
       console.log("Failed to update user", e);
     }
   };
-  // const remove = async (id, onSuccess) => {
-  //   try {
-  //     await deleteMutation.trigger(id);
-  //     confirm("are you sure to delete this user?");
-  //     if (onSuccess) onSuccess();
-  //   } catch (e) {
-  //     console.log("Failed to delete user", e);
-  //   }
-  // };
-  const remove = async (id, onSuccess) => {
+
+  const remove = async (id: string | number, onSuccess?: () => void) => {
     try {
-      if (confirm("are you sure to delete this user?")) {
+      if (window.confirm("Are you sure you want to delete this user?")) {
         await deleteMutation.trigger(id);
         mutate();
-        onSuccess();
+        if (onSuccess) onSuccess();
       }
     } catch (e) {
       console.log("Failed to delete user", e);
     }
   };
 
-  console.log("users:", allUsers);
+  console.log("allUsers:", allUsers);
 
   return (
     <UserContext.Provider
@@ -128,8 +161,10 @@ export function UserProvider({ children }) {
         actions: {
           setFilter,
           setSort,
-          setPage: (page) => setPagination((prev) => ({ ...prev, page })),
-          setLimit: (limit) => setPagination((prev) => ({ ...prev, limit })),
+          setPage: (page: number) =>
+            setPagination((prev) => ({ ...prev, page })),
+          setLimit: (limit: string | number) =>
+            setPagination((prev) => ({ ...prev, limit: Number(limit) })),
           create,
           update,
           remove,

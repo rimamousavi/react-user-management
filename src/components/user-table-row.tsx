@@ -1,20 +1,16 @@
 import { useUserContext } from "../context/user-context";
+import { User } from "../type";
 
-export function TableRow(props) {
-  const {
-    id,
-    status,
-    name,
-    email,
-    role,
-    phone,
-    createdAt,
-    onEdit,
-    onDelete,
-    selectedUsers,
-    onUserSelect,
-  } = props;
+interface TableRowProps {
+  user: User;
+  onEdit: (user: User) => void;
+  onDelete: (id: string) => void;
+  selectedUsers: Record<string, boolean>;
+  onUserSelect: (id: string, checked: boolean) => void;
+}
 
+export function TableRow(props: TableRowProps) {
+  const { id, status, name, email, role, phone, createdAt } = props.user;
   const service = useUserContext();
   const { update } = service.actions;
 
@@ -34,8 +30,8 @@ export function TableRow(props) {
           <input
             className="row-checkbox"
             type="checkbox"
-            checked={!!selectedUsers?.[id]}
-            onChange={(e) => onUserSelect?.(id, e.target.checked)}
+            checked={!!props.selectedUsers?.[id]}
+            onChange={(e) => props.onUserSelect?.(id, e.target.checked)}
           />
           <span className="checkbox"></span>
         </label>
@@ -65,12 +61,10 @@ export function TableRow(props) {
         <div className="flex items-center space-x-2">
           <label className="switch">
             <input
-              data-name="{name}"
               className="switch-btn"
               type="checkbox"
-              key={status}
               defaultChecked={status === true}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 update({ id, status: e.target.checked });
               }}
             />
@@ -90,7 +84,7 @@ export function TableRow(props) {
       <td className="text-foreground h-10 px-2 align-middle font-medium whitespace-nowrap text-right">
         <div className="flex items-center justify-end space-x-2">
           <button
-            onClick={() => onEdit?.(props)}
+            onClick={() => props.onEdit?.(props.user)}
             className="edit-btn inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([className*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-[--ring] focus-visible:ring-[#a1a1a1]/50 focus-visible:ring-[3px] aria-invalid:border-[--destructive] hover:bg-[--accent] hover:text-[--accent-foreground] dark:hover:bg-[--accent]/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5"
           >
             <svg
@@ -109,7 +103,7 @@ export function TableRow(props) {
             </svg>
           </button>
           <button
-            onClick={() => onDelete?.(id)}
+            onClick={() => props.onDelete?.(id)}
             className="delete-btn inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([className*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-[--ring] focus-visible:ring-[#a1a1a1]/50 focus-visible:ring-[3px] hover:bg-[--accent] hover:text-[--accent-foreground] dark:hover:bg-[--accent]/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5"
           >
             <svg

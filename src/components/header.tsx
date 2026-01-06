@@ -9,11 +9,13 @@ export function Header() {
   const { setFilter, setSort, setPage } = service.actions;
 
   const ROLE_OPTIONS = [
+    { label: "All role", value: "" },
     { label: "Admin", value: "admin" },
     { label: "User", value: "user" },
   ];
 
   const STATUS_OPTIONS = [
+    { label: "All status", value: "" },
     { label: "Active", value: "true" },
     { label: "Inactive", value: "false" },
   ];
@@ -25,13 +27,13 @@ export function Header() {
     { label: "Name (Z-A)", value: "name_desc" },
   ];
 
-  function handleFilterChange(e) {
+  function handleFilterChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
     setPage(1);
   }
 
-  function handleSort(e) {
+  function handleSort(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
     const [sortBy, order] = value.split("_");
     setSort({ sortBy, order });

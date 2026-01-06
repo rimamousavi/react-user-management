@@ -18,7 +18,7 @@ export function Pagination({
     { value: "100", label: "100 Items per page" },
     { value: "all", label: "All items" },
   ];
-  const handleLimitChange = (e) => {
+  const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     const newLimit = val === "all" ? null : Number(val);
     onLimitChange(newLimit);

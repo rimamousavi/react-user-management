@@ -4,26 +4,27 @@ import { useToggle } from "@uidotdev/usehooks";
 import { useDebounceValue } from "usehooks-ts";
 import Loader from "./components/loader";
 import { useUserContext } from "./context/user-context";
+import { User } from "./type";
 
 function App() {
   const service = useUserContext();
-  const selectAllRef = useRef(null);
+  const selectAllRef = useRef<HTMLInputElement | null>(null);
   const [on, toggle] = useToggle(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedIds, setSelectedIds] = useState({});
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
   const { users, allUsers, isLoading, total } = service.data;
   const { filter, pagination } = service.state;
   const { setFilter, setPage, create, update, remove, refresh } =
     service.actions;
   const [searchTerm, setSearchTerm] = useState(filter.search || "");
   const [debouncedSearch] = useDebounceValue(searchTerm, 800);
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
   useEffect(() => {
     if (debouncedSearch !== filter.search) {
-      setFilter((prev) => ({ ...prev, search: debouncedSearch }));
+      setFilter((prev: any) => ({ ...prev, search: debouncedSearch }));
       setPage(1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,7 +43,7 @@ function App() {
     selectAllRef.current.checked = selectedCount === total && total > 0;
   }, [selectedIds, total]);
 
-  function handleUserSelect(id, checked) {
+  function handleUserSelect(id: string, checked: boolean) {
     setSelectedIds((prev) => {
       const next = { ...prev };
       if (checked) next[id] = true;
@@ -50,6 +51,11 @@ function App() {
       return next;
     });
   }
+
+  console.log("selectAllRef", selectAllRef);
+  console.log(selectedIds);
+  console.log("setSelectedIds", setSelectedIds);
+  console.log(selectedIds);
 
   return (
     <>
@@ -121,7 +127,7 @@ function App() {
           <Header />
           <div className="flex flex-col-reverse overflow-x-auto border border-gray-200 bg-white rounded-lg mt-4">
             <table>
-              <Loader isLoading={isLoading}>
+              <Loader isLoading={isLoading} title="Loading users...">
                 <UserTable
                   selectAllRef={selectAllRef}
                   allUsers={allUsers}
