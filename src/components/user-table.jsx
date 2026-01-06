@@ -29,9 +29,11 @@ export function UserTable({
 
   const { pagination } = service.state;
   const { setPage, setLimit } = service.actions;
+
   function handleSelectAll(checked) {
     if (checked) {
       const all = {};
+
       (allUsers || []).forEach((u) => {
         all[u.id] = true;
       });
@@ -84,7 +86,6 @@ export function UserTable({
               onDelete={onRowDelete}
               selectedUsers={selectedIds}
               onUserSelect={onUserSelect}
-              
             />
           );
         })}
