@@ -31,6 +31,7 @@ export function DialogForm({
       ...formState,
       name: formState.fullName,
       status: formState.status === "true",
+      createdAt: new Date(),
     };
 
     if (initialData?.id) {
