@@ -5,7 +5,7 @@ import useSWR from "swr";
 import axios from "axios";
 import useSWRMutation from "swr/mutation";
 
-axios.defaults.baseURL = "https://693e775f12c964ee6b6d71d4.mockapi.io/api/v1";
+axios.defaults.baseURL = "http://localhost:3000";
 const API_URL = "/users";
 
 // --- Fetchers
@@ -13,7 +13,7 @@ const api = {
   add: async (url, { arg }) => axios.post(url, arg),
   update: async (url, { arg }) => {
     const { id, ...data } = arg;
-    return axios.put(`${url}/${id}`, data);
+    return axios.patch(`${url}/${id}`, data);
   },
   delete: async (url, { arg: id }) => axios.delete(`${url}/${id}`),
 };
@@ -46,8 +46,13 @@ export function UserProvider({ children }) {
   } = useSWR(
     [API_URL, filter, sort, pagination],
     ([url, filter, sort, pagination]) => {
-      const params = cleanParams({ ...filter, ...sort, ...pagination });
-      return axios.get(url, { params: params });
+      const params = cleanParams({ ...filter, ...sort });
+      const apiParams = {
+        ...params,
+        _page: pagination.page,
+        _per_page: pagination.limit || 1000,
+      };
+      return axios.get(url, { params: apiParams });
     }
   );
 
@@ -56,7 +61,11 @@ export function UserProvider({ children }) {
     [API_URL, filter, sort],
     ([url, filter, sort]) => {
       const params = cleanParams({ ...filter, ...sort });
-      return axios.get(url, { params: params });
+      const apiParams = {
+        ...params,
+        _per_page: 1000,
+      };
+      return axios.get(url, { params: apiParams });
     }
   );
   // --- Mutations
@@ -104,11 +113,13 @@ export function UserProvider({ children }) {
     }
   };
 
+  console.log("users:", allUsers);
+
   return (
     <UserContext.Provider
       value={{
         data: {
-          users: users?.data,
+          users: users?.data?.data,
           allUsers: allUsers?.data,
           isLoading,
           total: allUsers?.data?.length || 0,
