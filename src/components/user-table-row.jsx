@@ -19,16 +19,14 @@ export function TableRow(props) {
   const { update } = service.actions;
 
   const isActive = status === true;
-  const initials = name
+  const safeName = name || "";
+
+  const initials = safeName
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase();
 
-  const handleStatusChange = (e) => {
-    const newStatus = e.target.checked;
-    update({ id, status: newStatus });
-  };
   return (
     <tr key={id} className="hover:bg-gray-50 [&_tr:last-child]:border-0">
       <td data-label="Select" className="td">
@@ -60,7 +58,7 @@ export function TableRow(props) {
       </td>
       <td data-label="Role" className="td">
         <span className="inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 focus-visible:border-[--ring] focus-visible:ring-[#a1a1a1]/50 focus-visible:ring-[3px] transition-[color,box-shadow] overflow-hidden border-transparent bg-[--primary] text-[--primary-foreground] [a&]:hover:bg-[--primary]/90">
-          {role.charAt(0).toUpperCase() + role.slice(1)}
+          {role ? role.charAt(0).toUpperCase() + role.slice(1) : "N/A"}
         </span>
       </td>
       <td data-label="Status" className="td">
@@ -70,9 +68,13 @@ export function TableRow(props) {
               data-name="{name}"
               className="switch-btn"
               type="checkbox"
-              checked={isActive}
-              onChange={handleStatusChange}
+              key={status}
+              defaultChecked={status === true}
+              onChange={(e) => {
+                update({ id, status: e.target.checked });
+              }}
             />
+
             <span className="slider round"></span>
           </label>
           <span className="inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 focus-visible:border-[--ring] focus-visible:ring-[#a1a1a1]/50 focus-visible:ring-[3px] dark:aria-invalid:ring-[--destructive]/40 transition-[color,box-shadow] overflow-hidden border-transparent bg-[--primary] text-[--primary-foreground] [a&]:hover:bg-[--primary]/90">
@@ -80,9 +82,11 @@ export function TableRow(props) {
           </span>
         </div>
       </td>
-      <td data-label="Last Login" className="td text-gray-600">
-        {createdAt.slice(0, 10) + " , " + createdAt.slice(11, 16)}
-      </td>
+      {createdAt && (
+        <td data-label="Last Login" className="td text-gray-600">
+          {createdAt.slice(0, 10) + " , " + createdAt.slice(11, 16)}
+        </td>
+      )}
       <td className="text-foreground h-10 px-2 align-middle font-medium whitespace-nowrap text-right">
         <div className="flex items-center justify-end space-x-2">
           <button
